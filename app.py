@@ -5,7 +5,7 @@ import numpy as np
 app = Flask(__name__)
 
 # Carga del modelo
-with open("modelo.pkl", "rb") as f:
+with open("modelo_agua.pkl", "rb") as f:
     modelo = pickle.load(f)
 
 @app.route("/")
