@@ -4,13 +4,13 @@ import numpy as np
 
 app = Flask(__name__)
 
-# Carga del modelo
+# Carga del modelo entrenado (ajusta el nombre si es diferente)
 with open("modelo_agua.pkl", "rb") as f:
     modelo = pickle.load(f)
 
 @app.route("/")
 def home():
-    return "API corriendo!"
+    return "¡API de clasificación de agua activa!"
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -27,13 +27,8 @@ def predict():
     # El modelo espera un array 2D: [[conductividad, turbidez]]
     prediccion = modelo.predict([[conductividad, turbidez]])[0]
 
-    # Devuelve "limpia" o "sucia"
-    if prediccion == 0:
-        resultado = "limpia"
-    else:
-        resultado = "sucia"
-
-    return jsonify({"resultado": resultado})
+    # Devuelve el resultado (ej. "agua limpia" o "agua sucia")
+    return jsonify({"resultado": prediccion})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
