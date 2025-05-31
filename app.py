@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
-import numpy as np
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
+import pickle
 
 app = Flask(__name__)
-CORS(app)  # 👉 Esto habilita CORS para todas las rutas
 
-# Carga del modelo entrenado (ajusta el nombre si es diferente)
+# Habilitar CORS globalmente
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Cargar el modelo entrenado
 with open("modelo_agua.pkl", "rb") as f:
     modelo = pickle.load(f)
 
@@ -13,8 +15,13 @@ with open("modelo_agua.pkl", "rb") as f:
 def home():
     return "¡El servidor está corriendo!"
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["POST", "OPTIONS"])
+@cross_origin(origins="*")
 def predict():
+    # Permitir la respuesta para la petición preflight
+    if request.method == "OPTIONS":
+        return jsonify({"message": "Preflight OK"}), 200
+
     # Obtener los datos del POST como JSON
     data = request.get_json()
     if data is None:
@@ -24,17 +31,13 @@ def predict():
     conductividad = data.get("conductividad")
     turbidez = data.get("turbidez")
 
-    # Validar que existan los datos
     if conductividad is None or turbidez is None:
         return jsonify({"error": "Faltan datos: 'conductividad' y/o 'turbidez'"}), 400
 
-    # El modelo espera un array 2D: [[conductividad, turbidez]]
+    # Hacer la predicción con el modelo
     prediccion = modelo.predict([[conductividad, turbidez]])[0]
-
-    # Convertir a int puro para que sea serializable
     prediccion = int(prediccion)
 
-    # Devolver la respuesta en JSON
     return jsonify({"resultado": prediccion})
 
 if __name__ == "__main__":
