@@ -5,6 +5,10 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # 👉 Esto habilita CORS para todas las rutas
 
+# Carga del modelo entrenado (ajusta el nombre si es diferente)
+with open("modelo_agua.pkl", "rb") as f:
+    modelo = pickle.load(f)
+
 @app.route("/")
 def home():
     return "¡El servidor está corriendo!"
@@ -24,12 +28,8 @@ def predict():
     if conductividad is None or turbidez is None:
         return jsonify({"error": "Faltan datos: 'conductividad' y/o 'turbidez'"}), 400
 
-    # Ejemplo de "predicción" sencilla:
-    # (aquí normalmente pondrías tu modelo real)
-    if conductividad > 5.0:
-        prediccion = np.int64(1)
-    else:
-        prediccion = np.int64(0)
+    # El modelo espera un array 2D: [[conductividad, turbidez]]
+    prediccion = modelo.predict([[conductividad, turbidez]])[0]
 
     # Convertir a int puro para que sea serializable
     prediccion = int(prediccion)
