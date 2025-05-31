@@ -27,8 +27,13 @@ def predict():
     # El modelo espera un array 2D: [[conductividad, turbidez]]
     prediccion = modelo.predict([[conductividad, turbidez]])[0]
 
-    # Devuelve el resultado
-    return jsonify({"resultado": prediccion})
+    # Devuelve "limpia" o "sucia"
+    if prediccion == 0:
+        resultado = "limpia"
+    else:
+        resultado = "sucia"
+
+    return jsonify({"resultado": resultado})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
