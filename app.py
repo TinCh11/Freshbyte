@@ -1,31 +1,24 @@
-from flask import Flask, request, jsonify
-import pickle
-import numpy as np
-
-app = Flask(__name__)
-
-# Carga del modelo entrenado (ajusta el nombre si es diferente)
-with open("modelo_agua.pkl", "rb") as f:
-    modelo = pickle.load(f)
-
-@app.route("/")
-def home():
-    return "¡API de clasificación de agua activa!"
-
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "No se enviaron datos"}), 400
 
-    try:
-        conductividad = float(data["conductividad"])
-        turbidez = float(data["turbidez"])
-    except (KeyError, ValueError):
-        return jsonify({"error": "Datos inválidos"}), 400
+    if data is None:
+        return jsonify({"error": "No se recibieron datos JSON"}), 400
 
-    # El modelo espera un array 2D: [[conductividad, turbidez]]
-    prediccion = modelo.predict([[conductividad, turbidez]])[0]
+    conductividad = data.get("conductividad")
+    turbidez = data.get("turbidez")
+
+    if conductividad is None or turbidez is None:
+        return jsonify({"error": "Faltan datos"}), 400
+
+    # Simula la predicción: aquí podrías usar tu modelo
+    import numpy as np
+    prediccion = np.int64(1) if conductividad > 5.0 else np.int64(0)
+
+    # CONVIERTE A int PURO
+    prediccion = int(prediccion)
+
+    return jsonify({"resultado": prediccion})
 
     # Devuelve el resultado (ej. "agua limpia" o "agua sucia")
     return jsonify({"resultado": prediccion})
